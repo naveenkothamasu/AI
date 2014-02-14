@@ -66,6 +66,7 @@ public class search {
 		 * System.out.println("output File: " + outputFile);
 		 * System.out.println("output Log: " + outputLog);
 		 */
+		clearAllNodes();
 		System.out.println("BFS");
 		System.out.println("----");
 		Hashtable<String, String> path = BFS(startNode, goalNode);
@@ -77,6 +78,7 @@ public class search {
 			}
 		}
 		System.out.println();
+		clearAllNodes();
 		System.out.println("DFS");
 		System.out.println("----");
 		path = DFS(startNode, goalNode);
@@ -88,6 +90,7 @@ public class search {
 			}
 		}
 		System.out.println();
+		clearAllNodes();
 		System.out.println("UCS");
 		System.out.println("----");
 		path = UCS(startNode, goalNode);
@@ -98,8 +101,9 @@ public class search {
 				parent = path.get(parent);
 			}
 		}
+		System.out.println();
 		
-		findCommnities();
+		findCommunities();
 	}
 
 	public static Hashtable<String, String> BFS(String startNode,
@@ -120,12 +124,21 @@ public class search {
 			}
 			for (String[] str : edges) {
 				if (str[0].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
 						queue.add(str[1]);
 						parent.put(str[1], currentNode);
 						allNodes.put(str[1], (long) 1);
 					}
+				}
 
+				if (str[1].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
+					if (allNodes.get(str[0]) != 1) {
+						queue.add(str[0]);
+						parent.put(str[0], currentNode);
+						allNodes.put(str[0], (long) 1);
+					}
 				}
 			}
 		}
@@ -135,7 +148,6 @@ public class search {
 
 	public static Hashtable<String, String> DFS(String startNode,
 			String goalNode) {
-
 		ArrayList<String> path = new ArrayList<>();
 		Stack<String> stack = new Stack<String>();
 		Hashtable<String, String> parent = new Hashtable<>();
@@ -152,12 +164,21 @@ public class search {
 			}
 			for (String[] str : edges) {
 				if (str[0].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
 						stack.push(str[1]);
 						parent.put(str[1], currentNode);
 						allNodes.put(str[1], (long) 1);
 					}
+				}
 
+				if (str[1].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
+					if (allNodes.get(str[0]) != 1) {
+						stack.add(str[0]);
+						parent.put(str[0], currentNode);
+						allNodes.put(str[0], (long) 1);
+					}
 				}
 			}
 		}
@@ -166,7 +187,8 @@ public class search {
 
 	public static Hashtable<String, String> UCS(String startNode,
 			String goalNode) {
-		//TODO: tie-breaking
+		// TODO: tie-breaking
+
 		ArrayList<String> path = new ArrayList<>();
 		PriorityQueue<Double> pq = new PriorityQueue<Double>();
 		Hashtable<Double, String> pathCost = new Hashtable<>();
@@ -184,6 +206,7 @@ public class search {
 			}
 			for (String[] str : edges) {
 				if (str[0].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
 						pq.add(Double.parseDouble(str[2]));
 						pathCost.put(Double.parseDouble(str[2]), str[1]);
@@ -192,34 +215,48 @@ public class search {
 					}
 
 				}
+
+				if (str[1].equals(currentNode)) {
+					allNodes.put(currentNode, (long) 1);
+					if (allNodes.get(str[0]) != 1) {
+						pq.add(Double.parseDouble(str[2]));
+						pathCost.put(Double.parseDouble(str[2]), str[0]);
+						parent.put(str[0], currentNode);
+						allNodes.put(str[0], (long) 1);
+					}
+				}
 			}
 		}
 		return null;
 	}
 
-	public static void findCommnities() {
-
-		// use BFS to reach all the nodes
-		long component_num = 1;
-		for(String outer: allNodes.keySet()){
+	public static void clearAllNodes() {
+		for (String outer : allNodes.keySet()) {
 			allNodes.put(outer, (long) 0);
 		}
+	}
+
+	public static void findCommunities() {
+
+		// use BFS to reach all the nodes
+		clearAllNodes();
+		long component_num = 1;
 		for (String outer : allNodes.keySet()) {
 			if (allNodes.get(outer) == 0) {
 				BFS(outer, "123");
 				component_num++;
-				allNodes.put(outer,component_num);
+				allNodes.put(outer, component_num);
 				for (String inner : allNodes.keySet()) {
 					if (allNodes.get(inner) == 1) {
 						allNodes.put(inner, component_num);
 					}
-					
+
 				}
 			}
 		}
-		
-		for(String outer: allNodes.keySet()){
-			System.out.println(outer + " "+ allNodes.get(outer));
+
+		for (String outer : allNodes.keySet()) {
+			System.out.println(outer + " " + allNodes.get(outer));
 		}
 	}
 }
