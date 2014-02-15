@@ -5,13 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Scanner;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -30,7 +34,7 @@ public class search {
 		public int compare(Node f, Node s) {
 			if (f.pathCost == s.pathCost && order.get(f) != null
 					&& order.get(s) != null) {
-				return (int) (order.get(f) - order.get(s));
+				return (int) (-order.get(f) + order.get(s));
 			}
 			return (int) (f.pathCost - s.pathCost);
 		}
@@ -97,7 +101,22 @@ public class search {
 			while(s.hasNextLine()){
 				sortedEdges.add(s.nextLine());
 			}
-			for(String str1: sortedEdges) {
+			/*
+			Stack<String> localStack = new Stack<>();
+			for(String str1: sortedEdges){
+				localStack.push(str1);
+			}
+			sortedEdges = new TreeSet<>();
+			String str1 = null;
+			while(!localStack.isEmpty()){
+				str1 = localStack.pop();
+				str = str1.split(",");
+				edges.add(str);
+				allNodes.put(str[0], (long) 0);
+				allNodes.put(str[1], (long) 0);
+			}
+			*/
+			for(String str1: sortedEdges){
 				str = str1.split(",");
 				edges.add(str);
 				allNodes.put(str[0], (long) 0);
@@ -106,48 +125,28 @@ public class search {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		/*
-		 * System.out.println("Task Number: " + taskNumber);
-		 * System.out.println("Start Node: " + startNode);
-		 * System.out.println("Goal Node: " + goalNode);
-		 * System.out.println("input File: " + inputFile);
-		 * System.out.println("tie breaking File: " + tieBreakingFile);
-		 * System.out.println("output File: " + outputFile);
-		 * System.out.println("output Log: " + outputLog);
-		 */
-		clearAllNodes();
+		
 		loadOrder();
 		try {
 
 			if (taskNumber == 1) {
+				clearAllNodes();
 				BFS(startNode, goalNode, outputFile, outputLog);
 			} else if (taskNumber == 2) {
+				clearAllNodes();
 				DFS(startNode, goalNode, outputFile, outputLog);
 			} else if (taskNumber == 3) {
+				clearAllNodes();
 				UCS(startNode, goalNode, outputFile, outputLog);
 			} else if (taskNumber == 4) {
+				clearAllNodes();
 				findCommunities(outputFile, outputLog);
 			}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		/*
-		 * String parent = goalNode; if (path != null) { while (parent != null)
-		 * { System.out.println(parent); parent = path.get(parent); } }
-		 * System.out.println(); clearAllNodes(); System.out.println("DFS");
-		 * System.out.println("----"); path = DFS(startNode, goalNode); parent =
-		 * goalNode; if (path != null) { while (parent != null) {
-		 * System.out.println(parent); parent = path.get(parent); } }
-		 * System.out.println(); clearAllNodes(); System.out.println("UCS");
-		 * System.out.println("----"); path = UCS(startNode, goalNode); parent =
-		 * goalNode; if (path != null) { while (parent != null) {
-		 * System.out.println(parent); parent = path.get(parent); } }
-		 * System.out.println();
-		 * 
-		 * findCommunities();
-		 */catch (IOException e) {
+		}catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -203,12 +202,13 @@ public class search {
 				outputLog.write(currentNode + "," + depth.get(currentNode)
 						+ "," + pathCostMap.get(currentNode));
 				outputLog.newLine();
-
+				ArrayList<String> children = null;
 				for (String[] str : edges) {
+					 children = new ArrayList<>();
 					if (str[0].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[1]) != 1) {
-							queue.add(str[1]);
+							children.add(str[1]);
 							parent.put(str[1], currentNode);
 							allNodes.put(str[1], (long) 1);
 							depth.put(str[1], depth.get(currentNode) + 1);
@@ -222,7 +222,7 @@ public class search {
 					if (str[1].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[0]) != 1) {
-							queue.add(str[0]);
+							children.add(str[0]);
 							parent.put(str[0], currentNode);
 							allNodes.put(str[0], (long) 1);
 							depth.put(str[0], depth.get(currentNode) + 1);
@@ -231,6 +231,14 @@ public class search {
 									pathCostMap.get(currentNode)
 											+ Double.parseDouble(str[2]));
 						}
+					}
+					Collections.sort(children);
+					Stack<String> localStack = new Stack<>();
+					for(String str1: children){
+						localStack.add(str1);
+					}
+					while(!localStack.isEmpty()){
+						queue.add(localStack.pop());
 					}
 				}
 			}
@@ -267,7 +275,7 @@ public class search {
 		path.add(startNode);
 		depth.put(startNode, (long) 0);
 		pathCostMap.put(startNode, 0.0);
-
+		ArrayList<String> children = null;
 
 		BufferedWriter outputFile = null;
 		BufferedWriter outputLog = null;
@@ -280,6 +288,7 @@ public class search {
 			outputLog.newLine();
 			
 			while (!stack.isEmpty()) {
+				children = new ArrayList<>();
 				// add currentNode children to queue
 				currentNode = stack.pop();
 				if (currentNode.equals(goalNode)) {
@@ -311,7 +320,8 @@ public class search {
 					if (str[0].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[1]) != 1) {
-							stack.push(str[1]);
+							//stack.push(str[1]);
+							children.add(str[1]);
 							parent.put(str[1], currentNode);
 							allNodes.put(str[1], (long) 1);
 							depth.put(str[1], depth.get(currentNode) + 1);
@@ -325,7 +335,7 @@ public class search {
 					if (str[1].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[0]) != 1) {
-							stack.add(str[0]);
+							children.add(str[0]);
 							parent.put(str[0], currentNode);
 							allNodes.put(str[0], (long) 1);
 							depth.put(str[0], depth.get(currentNode) + 1);
@@ -335,6 +345,15 @@ public class search {
 											+ Double.parseDouble(str[2]));
 						}
 					}
+				}
+				
+				Collections.sort(children);
+				Stack<String> localStack = new Stack<>();
+				for(String str1 : children){
+					localStack.push(str1);
+				}
+				while(!localStack.isEmpty()){
+					stack.push(localStack.pop());
 				}
 			}
 
@@ -384,8 +403,9 @@ public class search {
 
 			outputLog.write("name,depth,cost");
 			outputLog.newLine();
-			
+			SortedMap<String, Double> children = null;
 			while (!pq.isEmpty()) {
+				children = new TreeMap<>();
 				// add currentNode children to queue
 				parentPathCost = pq.remove().pathCost;
 				currentNode = pathCost.get(parentPathCost);
@@ -419,9 +439,9 @@ public class search {
 					if (str[0].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[1]) != 1) {
-							parentPathCost += Double.parseDouble(str[2]);
-							pq.add(new Node(str[1], parentPathCost));
-							pathCost.put(parentPathCost, str[1]);
+							//pq.add(new Node(str[1], parentPathCost));
+							children.put(str[1], parentPathCost+Double.parseDouble(str[2]));
+							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[1]);
 							parent.put(str[1], currentNode);
 							allNodes.put(str[1], (long) 1);
 							depth.put(str[1], depth.get(currentNode) + 1);
@@ -435,9 +455,9 @@ public class search {
 					if (str[1].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[0]) != 1) {
-							parentPathCost += Double.parseDouble(str[2]);
-							pq.add(new Node(str[0], parentPathCost));
-							pathCost.put(parentPathCost, str[0]);
+							//pq.add(new Node(str[0], parentPathCost));
+							children.put(str[0], parentPathCost+Double.parseDouble(str[2]));
+							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[0]);
 							parent.put(str[0], currentNode);
 							allNodes.put(str[0], (long) 1);
 							depth.put(str[0], depth.get(currentNode) + 1);
@@ -448,6 +468,14 @@ public class search {
 
 						}
 					}
+				}
+				
+				Stack<Node> localStack = new Stack<>();
+				for(Entry<String, Double> str1: children.entrySet()){
+					localStack.add(new Node(str1.getKey(), str1.getValue()));
+				}
+				while(!localStack.isEmpty()){
+					pq.add(localStack.pop());
 				}
 			}
 			if (!solutionFound) {
@@ -519,8 +547,10 @@ public class search {
 		BufferedWriter outputLog = null;
 		try {
 
-			outputFile = new BufferedWriter(new FileWriter(outputFileName));
+			//outputFile = new BufferedWriter(new FileWriter(outputFileName));
 			outputLog = new BufferedWriter(new FileWriter(outputLogName));
+			
+			outputFile = new BufferedWriter(new PrintWriter(System.out));
 			
 			Hashtable<String, Long> depth = new Hashtable<>();
 
