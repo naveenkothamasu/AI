@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.SortedMap;
@@ -23,7 +22,7 @@ import java.util.TreeSet;
 
 public class search {
 
-	protected static TreeMap<String, Long> allNodes = new TreeMap<>();
+	protected static SortedMap<String, Long> allNodes = new TreeMap<>();
 	protected static ArrayList<String[]> edges = new ArrayList<String[]>();
 	protected static String tieBreakingFile = null;
 	public static final Comparator<Node> my_total_order = new MyTotalOrder();
@@ -101,21 +100,7 @@ public class search {
 			while(s.hasNextLine()){
 				sortedEdges.add(s.nextLine());
 			}
-			/*
-			Stack<String> localStack = new Stack<>();
-			for(String str1: sortedEdges){
-				localStack.push(str1);
-			}
-			sortedEdges = new TreeSet<>();
-			String str1 = null;
-			while(!localStack.isEmpty()){
-				str1 = localStack.pop();
-				str = str1.split(",");
-				edges.add(str);
-				allNodes.put(str[0], (long) 0);
-				allNodes.put(str[1], (long) 0);
-			}
-			*/
+			
 			for(String str1: sortedEdges){
 				str = str1.split(",");
 				edges.add(str);
@@ -398,14 +383,12 @@ public class search {
 		BufferedWriter outputLog = null;
 		try {
 
-			outputFile = new BufferedWriter(new FileWriter(outputFileName));
-			outputLog = new BufferedWriter(new FileWriter(outputLogName));
+			outputFile = new BufferedWriter(new PrintWriter(outputFileName));
+			outputLog = new BufferedWriter(new PrintWriter(outputLogName));
 
 			outputLog.write("name,depth,cost");
 			outputLog.newLine();
-			SortedMap<String, Double> children = null;
 			while (!pq.isEmpty()) {
-				children = new TreeMap<>();
 				// add currentNode children to queue
 				parentPathCost = pq.remove().pathCost;
 				currentNode = pathCost.get(parentPathCost);
@@ -432,50 +415,36 @@ public class search {
 
 				}
 				outputLog.write(currentNode + "," + depth.get(currentNode)
-						+ "," + pathCostMap.get(currentNode) + "\n");
+						+ "," + pathCostMap.get(currentNode));
 				outputLog.newLine();
 
 				for (String[] str : edges) {
 					if (str[0].equals(currentNode)) {
-						allNodes.put(currentNode, (long) 1);
-						if (allNodes.get(str[1]) != 1) {
-							//pq.add(new Node(str[1], parentPathCost));
-							children.put(str[1], parentPathCost+Double.parseDouble(str[2]));
+						if (pathCostMap.get(str[1]) == null ||
+								pathCostMap.get(str[1]) > parentPathCost+Double.parseDouble(str[2])) {
+							pq.add(new Node(str[1], parentPathCost+Double.parseDouble(str[2])));
 							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[1]);
 							parent.put(str[1], currentNode);
-							allNodes.put(str[1], (long) 1);
 							depth.put(str[1], depth.get(currentNode) + 1);
 							pathCostMap.put(
 									str[1],
 									pathCostMap.get(currentNode)
 											+ Double.parseDouble(str[2]));
-
 						}
 					}
 					if (str[1].equals(currentNode)) {
-						allNodes.put(currentNode, (long) 1);
-						if (allNodes.get(str[0]) != 1) {
-							//pq.add(new Node(str[0], parentPathCost));
-							children.put(str[0], parentPathCost+Double.parseDouble(str[2]));
+						if (pathCostMap.get(str[0]) == null || 
+								pathCostMap.get(str[0]) > parentPathCost+Double.parseDouble(str[2])) {
+							pq.add(new Node(str[0], parentPathCost+Double.parseDouble(str[2])));
 							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[0]);
 							parent.put(str[0], currentNode);
-							allNodes.put(str[0], (long) 1);
 							depth.put(str[0], depth.get(currentNode) + 1);
 							pathCostMap.put(
 									str[0],
 									pathCostMap.get(currentNode)
 											+ Double.parseDouble(str[2]));
-
 						}
 					}
-				}
-				
-				Stack<Node> localStack = new Stack<>();
-				for(Entry<String, Double> str1: children.entrySet()){
-					localStack.add(new Node(str1.getKey(), str1.getValue()));
-				}
-				while(!localStack.isEmpty()){
-					pq.add(localStack.pop());
 				}
 			}
 			if (!solutionFound) {
@@ -501,11 +470,12 @@ public class search {
 		}
 	}
 
-	public static void BFS4Communities(String startNode,
-			Hashtable<String, Long> depth) {
+	public static ArrayList<String> BFS4Communities(String startNode,
+			Hashtable<String, Long> depth, BufferedWriter outputFile, BufferedWriter outputLog) {
 		ArrayList<String> path = new ArrayList<>();
 		LinkedList<String> queue = new LinkedList<>();
 		Hashtable<String, String> parent = new Hashtable<>();
+		ArrayList<String> ret = new ArrayList<>();
 		String currentNode = startNode;
 
 		queue.add(startNode);
@@ -513,14 +483,17 @@ public class search {
 		if (!depth.contains(startNode)) {
 			depth.put(startNode, (long) 0);
 		}
+		ArrayList<String> children = null;
 		while (!queue.isEmpty()) {
+			children = new ArrayList<>();
 			// add currentNode children to queue
 			currentNode = queue.remove();
 			for (String[] str : edges) {
 				if (str[0].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
-						queue.add(str[1]);
+						//queue.add(str[1]);
+						children.add(str[1]);
 						parent.put(str[1], currentNode);
 						allNodes.put(str[1], (long) 1);
 						depth.put(str[1], depth.get(currentNode) + 1);
@@ -530,14 +503,23 @@ public class search {
 				if (str[1].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[0]) != 1) {
-						queue.add(str[0]);
+						//queue.add(str[0]);
+						children.add(str[0]);
 						parent.put(str[0], currentNode);
 						allNodes.put(str[0], (long) 1);
 						depth.put(str[0], depth.get(currentNode) + 1);
 					}
 				}
 			}
+			
+			Collections.sort(children);
+			for(String str1 : children){
+				queue.add(str1);
+				ret.add(str1);
+			}
 		}
+		
+		return ret;
 	}
 
 	public static void findCommunities(String outputFileName,
@@ -547,10 +529,8 @@ public class search {
 		BufferedWriter outputLog = null;
 		try {
 
-			//outputFile = new BufferedWriter(new FileWriter(outputFileName));
 			outputLog = new BufferedWriter(new FileWriter(outputLogName));
-			
-			outputFile = new BufferedWriter(new PrintWriter(System.out));
+			outputFile = new BufferedWriter(new PrintWriter(outputFileName));
 			
 			Hashtable<String, Long> depth = new Hashtable<>();
 
@@ -560,10 +540,10 @@ public class search {
 			clearAllNodes();
 			long component_num = 1;
 			long group = 0;
-
+			ArrayList<String> ret = null;
 			for (String outer : allNodes.keySet()) {
 				if (allNodes.get(outer) == 0) {
-					BFS4Communities(outer, depth);
+					ret = BFS4Communities(outer, depth, outputFile, outputLog);
 					component_num++;
 					allNodes.put(outer, component_num);
 					group = allNodes.get(outer) - 1;
@@ -571,15 +551,17 @@ public class search {
 							+ group);
 					outputLog.newLine();
 					outputFile.write(outer);
-					for (String inner : allNodes.keySet()) {
-						if (allNodes.get(inner) == 1) {
+					for (String inner : ret) {
 							allNodes.put(inner, component_num);
 							group = allNodes.get(outer) - 1;
 							outputLog.write(inner + "," + depth.get(inner)
 									+ "," + group);
 							outputLog.newLine();
-							outputFile.write("," + inner);
-						}
+							
+					}
+					Collections.sort(ret);
+					for(String inner : ret){
+						outputFile.write("," + inner);
 					}
 					outputLog.write("------------------------");
 					outputLog.newLine();
