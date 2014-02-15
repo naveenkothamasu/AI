@@ -1,26 +1,65 @@
 package assignment.ai;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class search {
 
 	protected static Hashtable<String, Long> allNodes = new Hashtable<>();
 	protected static ArrayList<String[]> edges = new ArrayList<String[]>();
+	protected static String tieBreakingFile = null;
+	public static final Comparator<Node> my_total_order = new MyTotalOrder();
+	private static Hashtable<String, Long> order = new Hashtable<>();
+	
+	private static class MyTotalOrder implements Comparator<Node> {
 
+		public int compare(Node f, Node s) {
+			if (f.pathCost == s.pathCost && order.get(f) != null
+					&& order.get(s) != null) {
+				return (int) (order.get(f) - order.get(s));
+			}
+			return (int) (f.pathCost - s.pathCost);
+		}
+	};
+	
+	private static void loadOrder() {
+		FileReader fr = null;
+		Scanner scanner = null;
+		long i =0;
+		try {
+			fr = new FileReader(tieBreakingFile);
+			scanner = new Scanner(fr);
+			while (scanner.hasNextLine()) {
+				order.put(scanner.nextLine(), i++);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				fr.close();
+				scanner.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	public static void main(String[] args) {
 
 		int taskNumber = 0;
 		String startNode = null;
 		String goalNode = null;
 		String inputFile = null;
-		String tieBreakingFile = null;
+
 		String outputFile = null;
 		String outputLog = null;
 
@@ -45,7 +84,6 @@ public class search {
 
 		Scanner s;
 		try {
-			// File file = new File(inputFile);
 			FileReader fr = new FileReader(inputFile);
 			s = new Scanner(fr);
 			while (s.hasNextLine()) {
@@ -67,6 +105,7 @@ public class search {
 		 * System.out.println("output Log: " + outputLog);
 		 */
 		clearAllNodes();
+		loadOrder();
 		System.out.println("BFS");
 		System.out.println("----");
 		Hashtable<String, String> path = BFS(startNode, goalNode);
@@ -102,7 +141,7 @@ public class search {
 			}
 		}
 		System.out.println();
-		
+
 		findCommunities();
 	}
 
@@ -190,17 +229,19 @@ public class search {
 		// TODO: tie-breaking
 
 		ArrayList<String> path = new ArrayList<>();
-		PriorityQueue<Double> pq = new PriorityQueue<Double>();
+		PriorityQueue<Node> pq = new PriorityQueue<Node>(11, my_total_order);
 		Hashtable<Double, String> pathCost = new Hashtable<>();
 		Hashtable<String, String> parent = new Hashtable<>();
 		String currentNode = startNode;
+		Double parentPathCost = 0.0;
 
-		pq.add(0.0);
+		pq.add(new Node(startNode, 0.0));
 		pathCost.put(0.0, startNode);
 		path.add(startNode);
 		while (!pq.isEmpty()) {
 			// add currentNode children to queue
-			currentNode = pathCost.get(pq.remove());
+			parentPathCost = pq.remove().pathCost;
+			currentNode = pathCost.get(parentPathCost);
 			if (currentNode.equals(goalNode)) {
 				return parent; // Solution Found;
 			}
@@ -208,19 +249,19 @@ public class search {
 				if (str[0].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
-						pq.add(Double.parseDouble(str[2]));
-						pathCost.put(Double.parseDouble(str[2]), str[1]);
+						parentPathCost += Double.parseDouble(str[2]);
+						pq.add(new Node(str[1], parentPathCost));
+						pathCost.put(parentPathCost, str[1]);
 						parent.put(str[1], currentNode);
 						allNodes.put(str[1], (long) 1);
 					}
-
 				}
-
 				if (str[1].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[0]) != 1) {
-						pq.add(Double.parseDouble(str[2]));
-						pathCost.put(Double.parseDouble(str[2]), str[0]);
+						parentPathCost += Double.parseDouble(str[2]);
+						pq.add(new Node(str[0], parentPathCost));
+						pathCost.put(parentPathCost, str[0]);
 						parent.put(str[0], currentNode);
 						allNodes.put(str[0], (long) 1);
 					}
@@ -259,4 +300,61 @@ public class search {
 			System.out.println(outer + " " + allNodes.get(outer));
 		}
 	}
+/*
+	public static Hashtable<String, String> UniformCostSearch(String startNode,
+			String goalNode) {
+
+		TreeSet<Node> open = new TreeSet<>(my_total_order);
+		Hashtable<String, Double> closed = new Hashtable<>();
+		Hashtable<String, String> path = new Hashtable<>();
+		Hashtable<String, Double> pathCost = new Hashtable<>();
+		Node node = null;
+		
+		Double parentPathCost = 0.0;
+		for (String str : allNodes.keySet()) {
+			if (str.equals(startNode)) {
+				open.add(new Node(str, 0));
+				pathCost.put(startNode, 0.0);
+			} else {
+				open.add(new Node(str, Long.MAX_VALUE));
+			}
+		}
+		Node currentNode = null;
+		while (true) {
+			if (open.isEmpty()) {
+				return null;
+			}
+			currentNode = open.first();
+			// TODO: populate path table
+			if (currentNode.name.equals(goalNode)) {
+				return path; // Solution found
+			}
+			parentPathCost = pathCost.get(currentNode.name);
+			for (String[] str : edges) {
+				if (str[0].equals(currentNode)) {
+					parentPathCost += Double.parseDouble(str[2]);
+					pathCost.put(str[1], parentPathCost);
+				}
+				if (str[1].equals(currentNode)) {
+					parentPathCost += Double.parseDouble(str[2]);
+					pathCost.put(str[1], parentPathCost);
+				}
+				
+				if(!open.contains(child) && !closed.contains(child)){
+					
+				}
+				
+				if(open.contains(child)){
+					
+				}
+				
+				if(closed.contains(child)){
+					
+				}
+			}
+			closed.put(currentNode.name, parentPathCost);
+		}
+
+	}
+*/
 }

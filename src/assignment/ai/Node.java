@@ -3,10 +3,10 @@ package assignment.ai;
 public class Node {
 
 	String name;
-	long cost = 0;
+	double pathCost = 0;
 
-	Node(String name, long cost) {
+	Node(String name, double d) {
 		this.name = name;
-		this.cost = cost;
+		this.pathCost = d;
 	}
 }
