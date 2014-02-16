@@ -27,6 +27,7 @@ public class search {
 	protected static ArrayList<String[]> edges = new ArrayList<String[]>();
 	protected static String tieBreakingFile = null;
 	public static final Comparator<Node> my_total_order = new MyTotalOrder();
+	public static final Comparator<String> my_total_order2 = new MyTotalOrder2();
 	private static Hashtable<String, Long> order = new Hashtable<String, Long>();
 
 	private static class MyTotalOrder implements Comparator<Node> {
@@ -38,7 +39,13 @@ public class search {
 					.compareTo(s.pathCost));
 		}
 	};
+	
+	private static class MyTotalOrder2 implements Comparator<String> {
 
+		public int compare(String f, String s) {
+			return (int) (order.get(f)-order.get(s));
+		}
+	};
 	private static void loadOrder() {
 		FileReader fr = null;
 		Scanner scanner = null;
@@ -219,7 +226,7 @@ public class search {
 					}
 					
 				}
-				Collections.sort(children);
+				Collections.sort(children, my_total_order2);
 				for (String str1 : children) {
 					queue.add(str1);
 				}
@@ -329,7 +336,7 @@ public class search {
 					}
 				}
 
-				Collections.sort(children);
+				Collections.sort(children, my_total_order2);
 				Stack<String> localStack = new Stack<String>();
 				for (String str1 : children) {
 					localStack.push(str1);
@@ -511,7 +518,7 @@ public class search {
 				}
 			}
 
-			Collections.sort(children);
+			Collections.sort(children, my_total_order2);
 			for (String str1 : children) {
 				queue.add(str1);
 				ret.add(str1);
@@ -558,7 +565,7 @@ public class search {
 						outputLog.newLine();
 
 					}
-					Collections.sort(ret);
+					Collections.sort(ret, my_total_order2);
 					for (String inner : ret) {
 						outputFile.write("," + inner);
 					}
