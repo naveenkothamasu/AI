@@ -20,20 +20,22 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+
 public class search {
 
-	protected static SortedMap<String, Long> allNodes = new TreeMap<>();
+	protected static SortedMap<String, Long> allNodes = new TreeMap<String, Long>();
 	protected static ArrayList<String[]> edges = new ArrayList<String[]>();
 	protected static String tieBreakingFile = null;
 	public static final Comparator<Node> my_total_order = new MyTotalOrder();
-	private static Hashtable<String, Long> order = new Hashtable<>();
+	private static Hashtable<String, Long> order = new Hashtable<String, Long>();
 
 	private static class MyTotalOrder implements Comparator<Node> {
 
 		public int compare(Node f, Node s) {
-			
-            return (f.pathCost == s.pathCost) ? (order.get(f.name).compareTo(order.get(s.name)))
-                    : (((Double)f.pathCost).compareTo(s.pathCost));
+
+			return (f.pathCost == s.pathCost) ? (order.get(f.name)
+					.compareTo(order.get(s.name))) : (((Double) f.pathCost)
+					.compareTo(s.pathCost));
 		}
 	};
 
@@ -69,7 +71,7 @@ public class search {
 		String outputFile = null;
 		String outputLog = null;
 		boolean firstT = true;
-		
+
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-t") && firstT) {
 				taskNumber = Integer.parseInt(args[i + 1]);
@@ -93,13 +95,13 @@ public class search {
 		try {
 			FileReader fr = new FileReader(inputFile);
 			s = new Scanner(fr);
-			SortedSet<String> sortedEdges = new TreeSet<>();
-			
-			while(s.hasNextLine()){
+			SortedSet<String> sortedEdges = new TreeSet<String>();
+
+			while (s.hasNextLine()) {
 				sortedEdges.add(s.nextLine());
 			}
-			
-			for(String str1: sortedEdges){
+
+			for (String str1 : sortedEdges) {
 				str = str1.split(",");
 				edges.add(str);
 				allNodes.put(str[0], (long) 0);
@@ -108,7 +110,7 @@ public class search {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		loadOrder();
 		try {
 
@@ -129,7 +131,7 @@ public class search {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -137,11 +139,11 @@ public class search {
 	public static void BFS(String startNode, String goalNode,
 			String outputFileName, String outputLogName) throws IOException {
 
-		ArrayList<String> path = new ArrayList<>();
-		LinkedList<String> queue = new LinkedList<>();
-		Hashtable<String, String> parent = new Hashtable<>();
-		Hashtable<String, Long> depth = new Hashtable<>();
-		Hashtable<String, Double> pathCostMap = new Hashtable<>();
+		ArrayList<String> path = new ArrayList<String>();
+		LinkedList<String> queue = new LinkedList<String>();
+		Hashtable<String, String> parent = new Hashtable<String, String>();
+		Hashtable<String, Long> depth = new Hashtable<String, Long>();
+		Hashtable<String, Double> pathCostMap = new Hashtable<String, Double>();
 		boolean solutionFound = false;
 
 		String currentNode = startNode;
@@ -155,7 +157,7 @@ public class search {
 
 			outputLog.write("name,depth,cost");
 			outputLog.newLine();
-			
+
 			queue.add(startNode);
 			path.add(startNode);
 			depth.put(startNode, (long) 0);
@@ -165,7 +167,7 @@ public class search {
 				currentNode = queue.remove();
 				if (currentNode.equals(goalNode)) {
 					// Solution Found;
-					Stack<String> outputStack = new Stack<>();
+					Stack<String> outputStack = new Stack<String>();
 					String node = goalNode;
 					while (node != null) {
 						outputStack.push(node);
@@ -174,7 +176,7 @@ public class search {
 					outputLog.write(currentNode + "," + depth.get(currentNode)
 							+ "," + pathCostMap.get(currentNode));
 					outputLog.newLine();
-					
+
 					while (!outputStack.isEmpty()) {
 						outputFile.write(outputStack.pop());
 						outputFile.newLine();
@@ -186,8 +188,8 @@ public class search {
 						+ "," + pathCostMap.get(currentNode));
 				outputLog.newLine();
 				ArrayList<String> children = null;
+				children = new ArrayList<String>();
 				for (String[] str : edges) {
-					 children = new ArrayList<>();
 					if (str[0].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[1]) != 1) {
@@ -215,14 +217,11 @@ public class search {
 											+ Double.parseDouble(str[2]));
 						}
 					}
-					Collections.sort(children);
-					Stack<String> localStack = new Stack<>();
-					for(String str1: children){
-						localStack.add(str1);
-					}
-					while(!localStack.isEmpty()){
-						queue.add(localStack.pop());
-					}
+					
+				}
+				Collections.sort(children);
+				for (String str1 : children) {
+					queue.add(str1);
 				}
 			}
 			if (!solutionFound) {
@@ -247,11 +246,11 @@ public class search {
 			String outputFileName, String outputLogName) throws IOException {
 
 		boolean solutionFound = false;
-		Hashtable<String, Long> depth = new Hashtable<>();
-		Hashtable<String, Double> pathCostMap = new Hashtable<>();
-		ArrayList<String> path = new ArrayList<>();
+		Hashtable<String, Long> depth = new Hashtable<String, Long>();
+		Hashtable<String, Double> pathCostMap = new Hashtable<String, Double>();
+		ArrayList<String> path = new ArrayList<String>();
 		Stack<String> stack = new Stack<String>();
-		Hashtable<String, String> parent = new Hashtable<>();
+		Hashtable<String, String> parent = new Hashtable<String, String>();
 		String currentNode = startNode;
 
 		stack.push(startNode);
@@ -269,14 +268,14 @@ public class search {
 
 			outputLog.write("name,depth,cost");
 			outputLog.newLine();
-			
+
 			while (!stack.isEmpty()) {
-				children = new ArrayList<>();
+				children = new ArrayList<String>();
 				// add currentNode children to queue
 				currentNode = stack.pop();
 				if (currentNode.equals(goalNode)) {
 					// Solution Found;
-					Stack<String> outputStack = new Stack<>();
+					Stack<String> outputStack = new Stack<String>();
 					String node = goalNode;
 
 					while (node != null) {
@@ -298,12 +297,12 @@ public class search {
 				outputLog.write(currentNode + "," + depth.get(currentNode)
 						+ "," + pathCostMap.get(currentNode));
 				outputLog.newLine();
-				
+
 				for (String[] str : edges) {
 					if (str[0].equals(currentNode)) {
 						allNodes.put(currentNode, (long) 1);
 						if (allNodes.get(str[1]) != 1) {
-							//stack.push(str[1]);
+							// stack.push(str[1]);
 							children.add(str[1]);
 							parent.put(str[1], currentNode);
 							allNodes.put(str[1], (long) 1);
@@ -329,13 +328,13 @@ public class search {
 						}
 					}
 				}
-				
+
 				Collections.sort(children);
-				Stack<String> localStack = new Stack<>();
-				for(String str1 : children){
+				Stack<String> localStack = new Stack<String>();
+				for (String str1 : children) {
 					localStack.push(str1);
 				}
-				while(!localStack.isEmpty()){
+				while (!localStack.isEmpty()) {
 					stack.push(localStack.pop());
 				}
 			}
@@ -361,12 +360,12 @@ public class search {
 			String outputFileName, String outputLogName) throws IOException {
 
 		boolean solutionFound = false;
-		Hashtable<String, Long> depth = new Hashtable<>();
-		Hashtable<String, Double> pathCostMap = new Hashtable<>();
+		Hashtable<String, Long> depth = new Hashtable<String, Long>();
+		Hashtable<String, Double> pathCostMap = new Hashtable<String, Double>();
 
-		ArrayList<String> path = new ArrayList<>();
+		ArrayList<String> path = new ArrayList<String>();
 		PriorityQueue<Node> pq = new PriorityQueue<Node>(11, my_total_order);
-		Hashtable<String, String> parent = new Hashtable<>();
+		Hashtable<String, String> parent = new Hashtable<String, String>();
 		String currentNode = startNode;
 		Double parentPathCost = 0.0;
 
@@ -388,11 +387,11 @@ public class search {
 			while (!pq.isEmpty()) {
 				// add currentNode children to queue
 				node1 = pq.remove();
-				currentNode= node1.name;
-				parentPathCost =node1.pathCost;
+				currentNode = node1.name;
+				parentPathCost = node1.pathCost;
 				if (currentNode.equals(goalNode)) {
 					// Solution Found;
-					Stack<String> outputStack = new Stack<>();
+					Stack<String> outputStack = new Stack<String>();
 					String node = goalNode;
 
 					while (node != null) {
@@ -403,7 +402,7 @@ public class search {
 					outputLog.write(currentNode + "," + depth.get(currentNode)
 							+ "," + pathCostMap.get(currentNode));
 					outputLog.newLine();
-					
+
 					while (!outputStack.isEmpty()) {
 						outputFile.write(outputStack.pop());
 						outputFile.newLine();
@@ -417,9 +416,11 @@ public class search {
 
 				for (String[] str : edges) {
 					if (str[0].equals(currentNode)) {
-						if (pathCostMap.get(str[1]) == null ||
-								pathCostMap.get(str[1]) > parentPathCost+Double.parseDouble(str[2])) {
-							pq.add(new Node(str[1], parentPathCost+Double.parseDouble(str[2])));
+						if (pathCostMap.get(str[1]) == null
+								|| pathCostMap.get(str[1]) > parentPathCost
+										+ Double.parseDouble(str[2])) {
+							pq.add(new Node(str[1], parentPathCost
+									+ Double.parseDouble(str[2])));
 							parent.put(str[1], currentNode);
 							depth.put(str[1], depth.get(currentNode) + 1);
 							pathCostMap.put(
@@ -429,9 +430,11 @@ public class search {
 						}
 					}
 					if (str[1].equals(currentNode)) {
-						if (pathCostMap.get(str[0]) == null || 
-								pathCostMap.get(str[0]) > parentPathCost+Double.parseDouble(str[2])) {
-							pq.add(new Node(str[0], parentPathCost+Double.parseDouble(str[2])));
+						if (pathCostMap.get(str[0]) == null
+								|| pathCostMap.get(str[0]) > parentPathCost
+										+ Double.parseDouble(str[2])) {
+							pq.add(new Node(str[0], parentPathCost
+									+ Double.parseDouble(str[2])));
 							parent.put(str[0], currentNode);
 							depth.put(str[0], depth.get(currentNode) + 1);
 							pathCostMap.put(
@@ -466,11 +469,12 @@ public class search {
 	}
 
 	public static ArrayList<String> BFS4Communities(String startNode,
-			Hashtable<String, Long> depth, BufferedWriter outputFile, BufferedWriter outputLog) {
-		ArrayList<String> path = new ArrayList<>();
-		LinkedList<String> queue = new LinkedList<>();
-		Hashtable<String, String> parent = new Hashtable<>();
-		ArrayList<String> ret = new ArrayList<>();
+			Hashtable<String, Long> depth, BufferedWriter outputFile,
+			BufferedWriter outputLog) {
+		ArrayList<String> path = new ArrayList<String>();
+		LinkedList<String> queue = new LinkedList<String>();
+		Hashtable<String, String> parent = new Hashtable<String, String>();
+		ArrayList<String> ret = new ArrayList<String>();
 		String currentNode = startNode;
 
 		queue.add(startNode);
@@ -480,14 +484,14 @@ public class search {
 		}
 		ArrayList<String> children = null;
 		while (!queue.isEmpty()) {
-			children = new ArrayList<>();
+			children = new ArrayList<String>();
 			// add currentNode children to queue
 			currentNode = queue.remove();
 			for (String[] str : edges) {
 				if (str[0].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[1]) != 1) {
-						//queue.add(str[1]);
+						// queue.add(str[1]);
 						children.add(str[1]);
 						parent.put(str[1], currentNode);
 						allNodes.put(str[1], (long) 1);
@@ -498,7 +502,7 @@ public class search {
 				if (str[1].equals(currentNode)) {
 					allNodes.put(currentNode, (long) 1);
 					if (allNodes.get(str[0]) != 1) {
-						//queue.add(str[0]);
+						// queue.add(str[0]);
 						children.add(str[0]);
 						parent.put(str[0], currentNode);
 						allNodes.put(str[0], (long) 1);
@@ -506,14 +510,14 @@ public class search {
 					}
 				}
 			}
-			
+
 			Collections.sort(children);
-			for(String str1 : children){
+			for (String str1 : children) {
 				queue.add(str1);
 				ret.add(str1);
 			}
 		}
-		
+
 		return ret;
 	}
 
@@ -526,8 +530,8 @@ public class search {
 
 			outputLog = new BufferedWriter(new FileWriter(outputLogName));
 			outputFile = new BufferedWriter(new PrintWriter(outputFileName));
-			
-			Hashtable<String, Long> depth = new Hashtable<>();
+
+			Hashtable<String, Long> depth = new Hashtable<String, Long>();
 
 			outputLog.write("name,depth,group");
 			outputLog.newLine();
@@ -547,15 +551,15 @@ public class search {
 					outputLog.newLine();
 					outputFile.write(outer);
 					for (String inner : ret) {
-							allNodes.put(inner, component_num);
-							group = allNodes.get(outer) - 1;
-							outputLog.write(inner + "," + depth.get(inner)
-									+ "," + group);
-							outputLog.newLine();
-							
+						allNodes.put(inner, component_num);
+						group = allNodes.get(outer) - 1;
+						outputLog.write(inner + "," + depth.get(inner) + ","
+								+ group);
+						outputLog.newLine();
+
 					}
 					Collections.sort(ret);
-					for(String inner : ret){
+					for (String inner : ret) {
 						outputFile.write("," + inner);
 					}
 					outputLog.write("------------------------");
@@ -575,39 +579,4 @@ public class search {
 		}
 
 	}
-	/*
-	 * public static Hashtable<String, String> UniformCostSearch(String
-	 * startNode, String goalNode) {
-	 * 
-	 * TreeSet<Node> open = new TreeSet<>(my_total_order); Hashtable<String,
-	 * Double> closed = new Hashtable<>(); Hashtable<String, String> path = new
-	 * Hashtable<>(); Hashtable<String, Double> pathCost = new Hashtable<>();
-	 * Node node = null;
-	 * 
-	 * Double parentPathCost = 0.0; for (String str : allNodes.keySet()) { if
-	 * (str.equals(startNode)) { open.add(new Node(str, 0));
-	 * pathCost.put(startNode, 0.0); } else { open.add(new Node(str,
-	 * Long.MAX_VALUE)); } } Node currentNode = null; while (true) { if
-	 * (open.isEmpty()) { return null; } currentNode = open.first(); // TODO:
-	 * populate path table if (currentNode.name.equals(goalNode)) { return path;
-	 * // Solution found } parentPathCost = pathCost.get(currentNode.name); for
-	 * (String[] str : edges) { if (str[0].equals(currentNode)) { parentPathCost
-	 * += Double.parseDouble(str[2]); pathCost.put(str[1], parentPathCost); } if
-	 * (str[1].equals(currentNode)) { parentPathCost +=
-	 * Double.parseDouble(str[2]); pathCost.put(str[1], parentPathCost); }
-	 * 
-	 * if(!open.contains(child) && !closed.contains(child)){
-	 * 
-	 * }
-	 * 
-	 * if(open.contains(child)){
-	 * 
-	 * }
-	 * 
-	 * if(closed.contains(child)){
-	 * 
-	 * } } closed.put(currentNode.name, parentPathCost); }
-	 * 
-	 * }
-	 */
 }
