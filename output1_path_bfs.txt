@@ -1,4 +1,3 @@
-A,B,C,D,F,L,O,P,R,S,T,Z
-E,G,M
-H,U
-I,N,V
+Alice,Ben,Dan,Emma,Gil,Helen,Lena,Noah
+Claire,Ian,Mark
+Frank,Jenny,Kevin

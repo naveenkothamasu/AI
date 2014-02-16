@@ -31,11 +31,9 @@ public class search {
 	private static class MyTotalOrder implements Comparator<Node> {
 
 		public int compare(Node f, Node s) {
-			if (f.pathCost == s.pathCost && order.get(f) != null
-					&& order.get(s) != null) {
-				return (int) (-order.get(f) + order.get(s));
-			}
-			return (int) (f.pathCost - s.pathCost);
+			
+            return (f.pathCost == s.pathCost) ? (order.get(f.name).compareTo(order.get(s.name)))
+                    : (((Double)f.pathCost).compareTo(s.pathCost));
 		}
 	};
 
@@ -368,13 +366,11 @@ public class search {
 
 		ArrayList<String> path = new ArrayList<>();
 		PriorityQueue<Node> pq = new PriorityQueue<Node>(11, my_total_order);
-		Hashtable<Double, String> pathCost = new Hashtable<>();
 		Hashtable<String, String> parent = new Hashtable<>();
 		String currentNode = startNode;
 		Double parentPathCost = 0.0;
 
 		pq.add(new Node(startNode, 0.0));
-		pathCost.put(0.0, startNode);
 		path.add(startNode);
 		depth.put(startNode, (long) 0);
 		pathCostMap.put(startNode, 0.0);
@@ -388,10 +384,12 @@ public class search {
 
 			outputLog.write("name,depth,cost");
 			outputLog.newLine();
+			Node node1 = null;
 			while (!pq.isEmpty()) {
 				// add currentNode children to queue
-				parentPathCost = pq.remove().pathCost;
-				currentNode = pathCost.get(parentPathCost);
+				node1 = pq.remove();
+				currentNode= node1.name;
+				parentPathCost =node1.pathCost;
 				if (currentNode.equals(goalNode)) {
 					// Solution Found;
 					Stack<String> outputStack = new Stack<>();
@@ -412,7 +410,6 @@ public class search {
 					}
 					solutionFound = true;
 					break;
-
 				}
 				outputLog.write(currentNode + "," + depth.get(currentNode)
 						+ "," + pathCostMap.get(currentNode));
@@ -423,7 +420,6 @@ public class search {
 						if (pathCostMap.get(str[1]) == null ||
 								pathCostMap.get(str[1]) > parentPathCost+Double.parseDouble(str[2])) {
 							pq.add(new Node(str[1], parentPathCost+Double.parseDouble(str[2])));
-							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[1]);
 							parent.put(str[1], currentNode);
 							depth.put(str[1], depth.get(currentNode) + 1);
 							pathCostMap.put(
@@ -436,7 +432,6 @@ public class search {
 						if (pathCostMap.get(str[0]) == null || 
 								pathCostMap.get(str[0]) > parentPathCost+Double.parseDouble(str[2])) {
 							pq.add(new Node(str[0], parentPathCost+Double.parseDouble(str[2])));
-							pathCost.put(parentPathCost+Double.parseDouble(str[2]), str[0]);
 							parent.put(str[0], currentNode);
 							depth.put(str[0], depth.get(currentNode) + 1);
 							pathCostMap.put(
